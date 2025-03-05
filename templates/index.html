@@ -7,15 +7,60 @@
 <body>
     <h1>Predicción de HS pulling y COSTO</h1>
     <form method="POST">
-        {% for col in ['Yacimiento', 'Activo', 'PU-FB', 'MET PRODUCCION', 'BATERIA', 'Objetivo', 'Obejtivo2'] %}
-            <label for="{{ col }}">{{ col }}:</label>
-            <select name="{{ col }}" required>
-                {% for clase in label_encoders[col].classes_ %}
-                    <option value="{{ clase }}">{{ clase }}</option>
-                {% endfor %}
-            </select>
-            <br><br>
-        {% endfor %}
+        <!-- Desplegable para Activo -->
+        <label for="Activo">Activo:</label>
+        <select name="Activo" id="Activo" required>
+            <!-- Opciones se llenarán con JavaScript -->
+        </select>
+        <br><br>
+        
+        <!-- Desplegable para Yacimiento -->
+        <label for="Yacimiento">Yacimiento:</label>
+        <select name="Yacimiento" id="Yacimiento" required>
+            <!-- Opciones se llenarán con JavaScript -->
+        </select>
+        <br><br>
+        
+        <!-- Desplegable para BATERIA -->
+        <label for="BATERIA">BATERIA:</label>
+        <select name="BATERIA" id="BATERIA" required>
+            <!-- Opciones se llenarán con JavaScript -->
+        </select>
+        <br><br>
+        
+        <!-- Otros campos que no requieren filtrado dinámico -->
+        <label for="PU-FB">PU-FB:</label>
+        <select name="PU-FB" required>
+            {% for clase in label_encoders["PU-FB"].classes_ %}
+                <option value="{{ clase }}">{{ clase }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+        
+        <label for="MET PRODUCCION">MET PRODUCCION:</label>
+        <select name="MET PRODUCCION" required>
+            {% for clase in label_encoders["MET PRODUCCION"].classes_ %}
+                <option value="{{ clase }}">{{ clase }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+        
+        <label for="Objetivo">Objetivo:</label>
+        <select name="Objetivo" required>
+            {% for clase in label_encoders["Objetivo"].classes_ %}
+                <option value="{{ clase }}">{{ clase }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+        
+        <label for="Obejtivo2">Obejtivo2:</label>
+        <select name="Obejtivo2" required>
+            {% for clase in label_encoders["Obejtivo2"].classes_ %}
+                <option value="{{ clase }}">{{ clase }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+        
         <input type="submit" value="Predecir">
     </form>
     
@@ -24,5 +69,61 @@
     <p>HS pulling: {{ prediction_hs | round(2) }} horas</p>
     <p>COSTO: {{ prediction_costo | round(2) }} (moneda local)</p>
     {% endif %}
+    
+    <!-- SCRIPT para el filtrado dinámico -->
+    <script>
+      // data_json es la variable pasada desde app.py que contiene el diccionario
+      // con la estructura { Activo: { Yacimiento: [BATERIA, ...] } }
+      const dataDict = {{ data_json | safe }};
+      
+      const activoSelect = document.getElementById("Activo");
+      const yacimientoSelect = document.getElementById("Yacimiento");
+      const bateriaSelect = document.getElementById("BATERIA");
+      
+      // Al cargar la página, poblar el desplegable de Activo
+      window.addEventListener("load", () => {
+          activoSelect.innerHTML = "<option value=''>-- Seleccione Activo --</option>";
+          Object.keys(dataDict).forEach(activo => {
+              const option = document.createElement("option");
+              option.value = activo;
+              option.textContent = activo;
+              activoSelect.appendChild(option);
+          });
+      });
+      
+      // Al cambiar el Activo, se actualiza Yacimiento y se limpia BATERIA
+      activoSelect.addEventListener("change", function() {
+          yacimientoSelect.innerHTML = "<option value=''>-- Seleccione Yacimiento --</option>";
+          bateriaSelect.innerHTML = "<option value=''>-- Seleccione BATERIA --</option>";
+          
+          const selectedActivo = this.value;
+          if (selectedActivo && dataDict[selectedActivo]) {
+              Object.keys(dataDict[selectedActivo]).forEach(yac => {
+                  const option = document.createElement("option");
+                  option.value = yac;
+                  option.textContent = yac;
+                  yacimientoSelect.appendChild(option);
+              });
+          }
+      });
+      
+      // Al cambiar el Yacimiento, se actualiza BATERIA
+      yacimientoSelect.addEventListener("change", function() {
+          bateriaSelect.innerHTML = "<option value=''>-- Seleccione BATERIA --</option>";
+          
+          const selectedActivo = activoSelect.value;
+          const selectedYacimiento = this.value;
+          
+          if (selectedActivo && selectedYacimiento && dataDict[selectedActivo][selectedYacimiento]) {
+              dataDict[selectedActivo][selectedYacimiento].forEach(bateria => {
+                  const option = document.createElement("option");
+                  option.value = bateria;
+                  option.textContent = bateria;
+                  bateriaSelect.appendChild(option);
+              });
+          }
+      });
+    </script>
 </body>
 </html>
+
