@@ -17,24 +17,18 @@ label_encoders = joblib.load("label_encoders.pkl")
 categorical_columns = ["Yacimiento", "Activo", "PU-FB", "MET PRODUCCION", "BATERIA", "Objetivo", "Obejtivo2"]
 
 # ==========================================
-# 2. CREAR EL DICCIONARIO ACTIVO->YACIMIENTO->BATERIA
-#    (Opcional: si tienes un DF con Activo/Yacimiento/BATERIA)
+# 2. FUNCIÓN PARA CONSTRUIR EL DICCIONARIO
 # ==========================================
-# EJEMPLO: Leer un Excel con tus datos originales.
-# Ajusta la ruta a tu archivo si deseas hacerlo dinámico.
-df = pd.read_excel("C:\Users\ry16123\OneDrive - YPF\Escritorio\DATOS ML\DATOS PU(3).xlsx")  # Cambia por tu ruta real
-df = df.dropna()
-
 def build_activo_dict(df):
     """
-    Crea un diccionario de la forma:
+    Construye un diccionario con la estructura:
     {
-      "ACTIVO_1": {
-         "YACIMIENTO_1": ["BATERIA_1", "BATERIA_2", ...],
-         "YACIMIENTO_2": [...],
+      "Activo1": {
+         "Yacimiento1": [BATERIA1, BATERIA2, ...],
+         "Yacimiento2": [...],
          ...
       },
-      "ACTIVO_2": {...},
+      "Activo2": { ... },
       ...
     }
     """
@@ -43,25 +37,35 @@ def build_activo_dict(df):
         activo = row["Activo"]
         yacimiento = row["Yacimiento"]
         bateria = row["BATERIA"]
-
         if activo not in data_dict:
             data_dict[activo] = {}
         if yacimiento not in data_dict[activo]:
             data_dict[activo][yacimiento] = set()
         data_dict[activo][yacimiento].add(bateria)
-
-    # Convertir sets a listas para poder serializar en JSON
+    # Convertir sets en listas para serializar en JSON
     for act in data_dict:
         for yac in data_dict[act]:
             data_dict[act][yac] = list(data_dict[act][yac])
     return data_dict
 
-# Construimos el diccionario y lo pasamos a JSON
-data_dict = build_activo_dict(df)
+# ==========================================
+# 3. CARGAR DATOS PARA FILTRADO DINÁMICO
+# ==========================================
+try:
+    # Asegúrate de actualizar la ruta al archivo Excel
+    df = pd.read_excel("ruta/al/archivo/DATOS PU(3).xlsx")
+    df = df.dropna()
+    data_dict = build_activo_dict(df)
+except Exception as e:
+    print("Error cargando el archivo Excel:", e)
+    # Si el archivo no está disponible en producción, puedes usar un diccionario por defecto
+    data_dict = {}
+
+# Convertir el diccionario a JSON para enviarlo a la plantilla
 data_json = json.dumps(data_dict)
 
 # ==========================================
-# 3. RUTA PRINCIPAL
+# 4. RUTA PRINCIPAL
 # ==========================================
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -71,7 +75,7 @@ def home():
         for col in categorical_columns:
             input_data[col] = request.form.get(col)
         
-        # Convertir valores a formato adecuado (codificar)
+        # Convertir valores a formato codificado
         encoded_values = []
         for col in categorical_columns:
             encoded_val = label_encoders[col].transform([input_data[col]])[0]
@@ -85,7 +89,6 @@ def home():
         pred_hs = model_hs.predict(df_input_scaled)[0]
         pred_costo = model_costo.predict(df_input_scaled)[0]
         
-        # Renderizar la respuesta
         return render_template(
             'index.html',
             prediction_hs=pred_hs,
@@ -97,6 +100,13 @@ def home():
     
     # GET: pasar data_json y label_encoders
     return render_template('index.html', label_encoders=label_encoders, data_json=data_json)
+
+# ==========================================
+# 5. EJECUCIÓN LOCAL
+# ==========================================
+if __name__ == '__main__':
+    app.run(debug=True)
+
 
 # ==========================================
 # 4. EJECUCIÓN LOCAL
