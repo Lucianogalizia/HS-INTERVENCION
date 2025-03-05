@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # ==========================================
 # 1. CARGAR MODELOS Y PREPROCESADORES
-# ==========================================
+# =========================================
 model_hs = joblib.load("best_rf_model_hs.pkl")
 model_costo = joblib.load("best_rf_model_costo.pkl")
 scaler = joblib.load("scaler.pkl")
