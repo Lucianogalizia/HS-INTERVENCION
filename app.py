@@ -53,7 +53,7 @@ def build_activo_dict(df):
 # ==========================================
 try:
     # Asegúrate de actualizar la ruta al archivo Excel
-    df = pd.read_excel("ruta/al/archivo/DATOS PU(3).xlsx")
+    df = pd.read_excel("C:\Users\ry16123\OneDrive - YPF\Escritorio\DATOS ML\DATOS PU(3).xlsx")
     df = df.dropna()
     data_dict = build_activo_dict(df)
 except Exception as e:
