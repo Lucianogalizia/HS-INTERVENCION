@@ -10,7 +10,7 @@ model_costo = joblib.load("best_rf_model_costo.pkl")
 scaler = joblib.load("scaler.pkl")
 label_encoders = joblib.load("label_encoders.pkl")
 
-# Lista de columnas categóricas (debe coincidir con el entrenamiento)
+# Lista de columnas categóricas
 categorical_columns = ["Yacimiento", "Activo", "PU-FB", "MET PRODUCCION", "BATERIA", "Objetivo", "Obejtivo2"]
 
 @app.route('/', methods=['GET', 'POST'])
@@ -24,7 +24,6 @@ def home():
         # Convertir valores a formato adecuado (codificar)
         encoded_values = []
         for col in categorical_columns:
-            # El encoder espera una lista, devuelve un array con el valor codificado
             encoded_val = label_encoders[col].transform([input_data[col]])[0]
             encoded_values.append(encoded_val)
         
@@ -37,9 +36,17 @@ def home():
         pred_costo = model_costo.predict(df_input_scaled)[0]
         
         # Renderizar la respuesta
-        return render_template('index.html', prediction_hs=pred_hs, prediction_costo=pred_costo, input_data=input_data)
+        return render_template(
+            'index.html',
+            prediction_hs=pred_hs,
+            prediction_costo=pred_costo,
+            input_data=input_data,
+            label_encoders=label_encoders  # <--- Agregado
+        )
     
-    return render_template('index.html')
+    # Para GET, también debes pasar label_encoders
+    return render_template('index.html', label_encoders=label_encoders)
 
+# (Opcional) para pruebas locales:
 if __name__ == '__main__':
     app.run(debug=True)
