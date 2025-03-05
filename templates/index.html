@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Predicción de HS pulling y COSTO</title>
+</head>
+<body>
+    <h1>Predicción de HS pulling y COSTO</h1>
+    <form method="POST">
+        {% for col in ['Yacimiento', 'Activo', 'PU-FB', 'MET PRODUCCION', 'BATERIA', 'Objetivo', 'Obejtivo2'] %}
+            <label for="{{ col }}">{{ col }}:</label>
+            <select name="{{ col }}" required>
+                {% for clase in label_encoders[col].classes_ %}
+                    <option value="{{ clase }}">{{ clase }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+        {% endfor %}
+        <input type="submit" value="Predecir">
+    </form>
+    
+    {% if prediction_hs and prediction_costo %}
+    <h2>Resultados de la Predicción:</h2>
+    <p>HS pulling: {{ prediction_hs | round(2) }} horas</p>
+    <p>COSTO: {{ prediction_costo | round(2) }} (moneda local)</p>
+    {% endif %}
+</body>
+</html>
