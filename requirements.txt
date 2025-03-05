@@ -7,3 +7,5 @@ openpyxl==3.0.10
 setuptools
 wheel
 Werkzeug<3.0
+numpy==1.23.5
+
