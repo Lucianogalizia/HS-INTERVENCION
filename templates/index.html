@@ -1,127 +1,215 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Predicción de HS pulling y COSTO</title>
+  <meta charset="UTF-8">
+  <title>Predicción de HS pulling y COSTO</title>
+  <!-- Google Font para mayor legibilidad -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Reset básico */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f7f9fc;
+      color: #333;
+      line-height: 1.6;
+      padding: 20px;
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #1e73be; /* Azul moderado */
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    form {
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+    }
+    
+    form label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+    
+    form select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+    
+    form input[type="submit"] {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: #1e73be;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    
+    form input[type="submit"]:hover {
+      background: #1662a8;
+    }
+    
+    .resultados {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      border-left: 5px solid #1e73be;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .resultados h2 {
+      margin-bottom: 15px;
+      color: #1e73be;
+      font-size: 22px;
+    }
+    
+    .resultados p {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
     <h1>Predicción de HS pulling y COSTO</h1>
+    
     <form method="POST">
-        <!-- Desplegable para Activo -->
-        <label for="Activo">Activo:</label>
-        <select name="Activo" id="Activo" required>
-            <!-- Opciones se llenarán con JavaScript -->
-        </select>
-        <br><br>
-        
-        <!-- Desplegable para Yacimiento -->
-        <label for="Yacimiento">Yacimiento:</label>
-        <select name="Yacimiento" id="Yacimiento" required>
-            <!-- Opciones se llenarán con JavaScript -->
-        </select>
-        <br><br>
-        
-        <!-- Desplegable para BATERIA -->
-        <label for="BATERIA">BATERIA:</label>
-        <select name="BATERIA" id="BATERIA" required>
-            <!-- Opciones se llenarán con JavaScript -->
-        </select>
-        <br><br>
-        
-        <!-- Otros campos que no requieren filtrado dinámico -->
-        <label for="PU-FB">PU-FB:</label>
-        <select name="PU-FB" required>
-            {% for clase in label_encoders["PU-FB"].classes_ %}
-                <option value="{{ clase }}">{{ clase }}</option>
-            {% endfor %}
-        </select>
-        <br><br>
-        
-        <label for="MET PRODUCCION">MET PRODUCCION:</label>
-        <select name="MET PRODUCCION" required>
-            {% for clase in label_encoders["MET PRODUCCION"].classes_ %}
-                <option value="{{ clase }}">{{ clase }}</option>
-            {% endfor %}
-        </select>
-        <br><br>
-        
-        <label for="Objetivo">Objetivo:</label>
-        <select name="Objetivo" required>
-            {% for clase in label_encoders["Objetivo"].classes_ %}
-                <option value="{{ clase }}">{{ clase }}</option>
-            {% endfor %}
-        </select>
-        <br><br>
-        
-        <label for="Obejtivo2">Obejtivo2:</label>
-        <select name="Obejtivo2" required>
-            {% for clase in label_encoders["Obejtivo2"].classes_ %}
-                <option value="{{ clase }}">{{ clase }}</option>
-            {% endfor %}
-        </select>
-        <br><br>
-        
-        <input type="submit" value="Predecir">
+      <!-- Select dinámicos para filtrado -->
+      <label for="Activo">Activo:</label>
+      <select name="Activo" id="Activo" required>
+        <!-- Se llenará con JavaScript -->
+      </select>
+      
+      <label for="Yacimiento">Yacimiento:</label>
+      <select name="Yacimiento" id="Yacimiento" required>
+        <!-- Se llenará con JavaScript -->
+      </select>
+      
+      <label for="BATERIA">BATERIA:</label>
+      <select name="BATERIA" id="BATERIA" required>
+        <!-- Se llenará con JavaScript -->
+      </select>
+      
+      <!-- Otros campos fijos -->
+      <label for="PU-FB">PU-FB:</label>
+      <select name="PU-FB" required>
+        {% for clase in label_encoders["PU-FB"].classes_ %}
+          <option value="{{ clase }}">{{ clase }}</option>
+        {% endfor %}
+      </select>
+      
+      <label for="MET PRODUCCION">MET PRODUCCION:</label>
+      <select name="MET PRODUCCION" required>
+        {% for clase in label_encoders["MET PRODUCCION"].classes_ %}
+          <option value="{{ clase }}">{{ clase }}</option>
+        {% endfor %}
+      </select>
+      
+      <label for="Objetivo">Objetivo:</label>
+      <select name="Objetivo" required>
+        {% for clase in label_encoders["Objetivo"].classes_ %}
+          <option value="{{ clase }}">{{ clase }}</option>
+        {% endfor %}
+      </select>
+      
+      <label for="Obejtivo2">Obejtivo2:</label>
+      <select name="Obejtivo2" required>
+        {% for clase in label_encoders["Obejtivo2"].classes_ %}
+          <option value="{{ clase }}">{{ clase }}</option>
+        {% endfor %}
+      </select>
+      
+      <input type="submit" value="Predecir">
     </form>
     
     {% if prediction_hs and prediction_costo %}
-    <h2>Resultados de la Predicción:</h2>
-    <p>HS pulling: {{ prediction_hs | round(2) }} horas</p>
-    <p>COSTO: {{ prediction_costo | round(2) }} (moneda local)</p>
+    <div class="resultados">
+      <h2>Resultados de la Predicción</h2>
+      <p><strong>HS pulling:</strong> {{ prediction_hs | round(2) }} horas</p>
+      <p><strong>COSTO:</strong> {{ prediction_costo | round(2) }} (moneda local)</p>
+    </div>
     {% endif %}
+  </div>
+  
+  <!-- SCRIPT para el filtrado dinámico -->
+  <script>
+    // data_json se pasa desde app.py y contiene el diccionario en formato JSON:
+    // { "Activo": { "Yacimiento": [ "BATERIA", ... ] } }
+    const dataDict = {{ data_json | safe }};
     
-    <!-- SCRIPT para el filtrado dinámico -->
-    <script>
-      // data_json es la variable pasada desde app.py que contiene el diccionario
-      // con la estructura { Activo: { Yacimiento: [BATERIA, ...] } }
-      const dataDict = {{ data_json | safe }};
-      
-      const activoSelect = document.getElementById("Activo");
-      const yacimientoSelect = document.getElementById("Yacimiento");
-      const bateriaSelect = document.getElementById("BATERIA");
-      
-      // Al cargar la página, poblar el desplegable de Activo
-      window.addEventListener("load", () => {
-          activoSelect.innerHTML = "<option value=''>-- Seleccione Activo --</option>";
-          Object.keys(dataDict).forEach(activo => {
-              const option = document.createElement("option");
-              option.value = activo;
-              option.textContent = activo;
-              activoSelect.appendChild(option);
-          });
+    const activoSelect = document.getElementById("Activo");
+    const yacimientoSelect = document.getElementById("Yacimiento");
+    const bateriaSelect = document.getElementById("BATERIA");
+    
+    // Al cargar la página, poblar el select de Activo
+    window.addEventListener("load", () => {
+      activoSelect.innerHTML = "<option value=''>-- Seleccione Activo --</option>";
+      Object.keys(dataDict).forEach(activo => {
+        const option = document.createElement("option");
+        option.value = activo;
+        option.textContent = activo;
+        activoSelect.appendChild(option);
       });
+    });
+    
+    // Al cambiar el Activo, actualizar Yacimiento y limpiar BATERIA
+    activoSelect.addEventListener("change", function() {
+      yacimientoSelect.innerHTML = "<option value=''>-- Seleccione Yacimiento --</option>";
+      bateriaSelect.innerHTML = "<option value=''>-- Seleccione BATERIA --</option>";
       
-      // Al cambiar el Activo, se actualiza Yacimiento y se limpia BATERIA
-      activoSelect.addEventListener("change", function() {
-          yacimientoSelect.innerHTML = "<option value=''>-- Seleccione Yacimiento --</option>";
-          bateriaSelect.innerHTML = "<option value=''>-- Seleccione BATERIA --</option>";
-          
-          const selectedActivo = this.value;
-          if (selectedActivo && dataDict[selectedActivo]) {
-              Object.keys(dataDict[selectedActivo]).forEach(yac => {
-                  const option = document.createElement("option");
-                  option.value = yac;
-                  option.textContent = yac;
-                  yacimientoSelect.appendChild(option);
-              });
-          }
-      });
+      const selectedActivo = this.value;
+      if (selectedActivo && dataDict[selectedActivo]) {
+        Object.keys(dataDict[selectedActivo]).forEach(yac => {
+          const option = document.createElement("option");
+          option.value = yac;
+          option.textContent = yac;
+          yacimientoSelect.appendChild(option);
+        });
+      }
+    });
+    
+    // Al cambiar el Yacimiento, actualizar BATERIA
+    yacimientoSelect.addEventListener("change", function() {
+      bateriaSelect.innerHTML = "<option value=''>-- Seleccione BATERIA --</option>";
       
-      // Al cambiar el Yacimiento, se actualiza BATERIA
-      yacimientoSelect.addEventListener("change", function() {
-          bateriaSelect.innerHTML = "<option value=''>-- Seleccione BATERIA --</option>";
-          
-          const selectedActivo = activoSelect.value;
-          const selectedYacimiento = this.value;
-          
-          if (selectedActivo && selectedYacimiento && dataDict[selectedActivo][selectedYacimiento]) {
-              dataDict[selectedActivo][selectedYacimiento].forEach(bateria => {
-                  const option = document.createElement("option");
-                  option.value = bateria;
-                  option.textContent = bateria;
-                  bateriaSelect.appendChild(option);
-              });
-          }
+      const selectedActivo = activoSelect.value;
+      const selectedYacimiento = this.value;
+      if (selectedActivo && selectedYacimiento && dataDict[selectedActivo][selectedYacimiento]) {
+        dataDict[selectedActivo][selectedYacimiento].forEach(bateria => {
+          const option = document.createElement("option");
+          option.value = bateria;
+          option.textContent = bateria;
+          bateriaSelect.appendChild(option);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+
       });
     </script>
 </body>
