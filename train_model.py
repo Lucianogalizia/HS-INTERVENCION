@@ -9,7 +9,8 @@ import joblib
 # ===============================
 # 1. CARGA Y PROCESAMIENTO DE DATOS
 # ===============================
-file_path = r"C:\Users\ry16123\OneDrive - YPF\Escritorio\DATOS ML\DATOS PU(3).xlsx"
+file_path = file_path = r"C:\Users\ry16123\OneDrive - YPF\Escritorio\power BI\GUADAL- POWER BI\Inteligencia Artificial\DATOS PU(4).xlsx"
+
 # Ajusta la ruta
 sheet_name = "2017-2024 INT"
 df = pd.read_excel(file_path, sheet_name=sheet_name)
