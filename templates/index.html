@@ -97,48 +97,58 @@
     <h1>Predicción de HS pulling y COSTO</h1>
     
     <form method="POST">
-      <!-- Select dinámicos para filtrado -->
+      <!-- 1) Activo (dinámico) -->
       <label for="Activo">Activo:</label>
       <select name="Activo" id="Activo" required>
         <!-- Se llenará con JavaScript -->
       </select>
       
+      <!-- 2) Yacimiento (dinámico) -->
       <label for="Yacimiento">Yacimiento:</label>
       <select name="Yacimiento" id="Yacimiento" required>
         <!-- Se llenará con JavaScript -->
       </select>
       
+      <!-- 3) BATERIA (dinámico) -->
       <label for="BATERIA">BATERIA:</label>
       <select name="BATERIA" id="BATERIA" required>
         <!-- Se llenará con JavaScript -->
       </select>
       
-      <!-- Otros campos fijos -->
+      <!-- Campos fijos con Jinja -->
       <label for="PU-FB">PU-FB:</label>
       <select name="PU-FB" required>
         {% for clase in label_encoders["PU-FB"].classes_ %}
-          <option value="{{ clase }}">{{ clase }}</option>
+          <option value="{{ clase }}"
+            {% if input_data and input_data.get('PU-FB') == clase %}selected{% endif %}
+          >{{ clase }}</option>
         {% endfor %}
       </select>
       
       <label for="MET PRODUCCION">MET PRODUCCION:</label>
       <select name="MET PRODUCCION" required>
         {% for clase in label_encoders["MET PRODUCCION"].classes_ %}
-          <option value="{{ clase }}">{{ clase }}</option>
+          <option value="{{ clase }}"
+            {% if input_data and input_data.get('MET PRODUCCION') == clase %}selected{% endif %}
+          >{{ clase }}</option>
         {% endfor %}
       </select>
       
       <label for="Objetivo">Objetivo:</label>
       <select name="Objetivo" required>
         {% for clase in label_encoders["Objetivo"].classes_ %}
-          <option value="{{ clase }}">{{ clase }}</option>
+          <option value="{{ clase }}"
+            {% if input_data and input_data.get('Objetivo') == clase %}selected{% endif %}
+          >{{ clase }}</option>
         {% endfor %}
       </select>
       
       <label for="Obejtivo2">Obejtivo2:</label>
       <select name="Obejtivo2" required>
         {% for clase in label_encoders["Obejtivo2"].classes_ %}
-          <option value="{{ clase }}">{{ clase }}</option>
+          <option value="{{ clase }}"
+            {% if input_data and input_data.get('Obejtivo2') == clase %}selected{% endif %}
+          >{{ clase }}</option>
         {% endfor %}
       </select>
       
@@ -154,28 +164,40 @@
     {% endif %}
   </div>
   
-  <!-- SCRIPT para el filtrado dinámico -->
+  <!-- SCRIPT para el filtrado dinámico y la re-selección -->
   <script>
-    // data_json se pasa desde app.py y contiene el diccionario en formato JSON:
-    // { "Activo": { "Yacimiento": [ "BATERIA", ... ] } }
+    // data_json: diccionario para filtrado en cascada
+    // Estructura => { "ACTIVO": { "YACIMIENTO": ["BATERIA1", "BATERIA2", ...] } }
     const dataDict = {{ data_json | safe }};
+    
+    // input_data_json: selección previa del usuario => { "Activo": "...", "Yacimiento": "...", "BATERIA": "...", ... }
+    const inputData = {{ input_data_json|default("{}")|safe }};
     
     const activoSelect = document.getElementById("Activo");
     const yacimientoSelect = document.getElementById("Yacimiento");
     const bateriaSelect = document.getElementById("BATERIA");
     
-    // Al cargar la página, poblar el select de Activo
+    // Al cargar la página, poblar Activo
     window.addEventListener("load", () => {
+      // 1) Poblar Activo
       activoSelect.innerHTML = "<option value=''>-- Seleccione Activo --</option>";
-      Object.keys(dataDict).forEach(activo => {
+      Object.keys(dataDict).forEach(act => {
         const option = document.createElement("option");
-        option.value = activo;
-        option.textContent = activo;
+        option.value = act;
+        option.textContent = act;
         activoSelect.appendChild(option);
       });
+      
+      // Re-seleccionar si el usuario ya tenía algo guardado
+      if (inputData["Activo"]) {
+        activoSelect.value = inputData["Activo"];
+      }
+      
+      // Disparar el evento "change" para cargar Yacimientos
+      activoSelect.dispatchEvent(new Event("change"));
     });
     
-    // Al cambiar el Activo, actualizar Yacimiento y limpiar BATERIA
+    // Al cambiar Activo, cargar Yacimientos
     activoSelect.addEventListener("change", function() {
       yacimientoSelect.innerHTML = "<option value=''>-- Seleccione Yacimiento --</option>";
       bateriaSelect.innerHTML = "<option value=''>-- Seleccione BATERIA --</option>";
@@ -189,29 +211,37 @@
           yacimientoSelect.appendChild(option);
         });
       }
+      
+      // Re-seleccionar Yacimiento si el usuario ya lo eligió
+      if (inputData["Yacimiento"]) {
+        yacimientoSelect.value = inputData["Yacimiento"];
+      }
+      
+      // Disparar "change" en Yacimiento para cargar BATERIA
+      yacimientoSelect.dispatchEvent(new Event("change"));
     });
     
-    // Al cambiar el Yacimiento, actualizar BATERIA
+    // Al cambiar Yacimiento, cargar BATERIA
     yacimientoSelect.addEventListener("change", function() {
       bateriaSelect.innerHTML = "<option value=''>-- Seleccione BATERIA --</option>";
       
       const selectedActivo = activoSelect.value;
       const selectedYacimiento = this.value;
       if (selectedActivo && selectedYacimiento && dataDict[selectedActivo][selectedYacimiento]) {
-        dataDict[selectedActivo][selectedYacimiento].forEach(bateria => {
+        dataDict[selectedActivo][selectedYacimiento].forEach(bat => {
           const option = document.createElement("option");
-          option.value = bateria;
-          option.textContent = bateria;
+          option.value = bat;
+          option.textContent = bat;
           bateriaSelect.appendChild(option);
         });
       }
+      
+      // Re-seleccionar BATERIA si el usuario ya lo eligió
+      if (inputData["BATERIA"]) {
+        bateriaSelect.value = inputData["BATERIA"];
+      }
     });
   </script>
-</body>
-</html>
-
-      });
-    </script>
 </body>
 </html>
 
