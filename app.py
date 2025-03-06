@@ -13,12 +13,12 @@ model_costo = joblib.load("best_rf_model_costo.pkl")
 scaler = joblib.load("scaler.pkl")
 label_encoders = joblib.load("label_encoders.pkl")
 
-# Lista de columnas categóricas que usas en tu predicción
+# Lista de columnas categóricas para la predicción
 categorical_columns = ["Yacimiento", "Activo", "PU-FB", "MET PRODUCCION", "BATERIA", "Objetivo", "Obejtivo2"]
 
 # ==========================================
 # 2. FUNCIÓN PARA CONSTRUIR EL DICCIONARIO
-#    (Activo -> {Yacimiento -> [BATERIAS]})
+#    (Activo -> {Yacimiento -> [BATERIA]})
 # ==========================================
 def build_activo_dict(df):
     """
@@ -58,14 +58,11 @@ def build_activo_dict(df):
 # 3. CARGAR EL EXCEL Y CREAR EL DICCIONARIO
 # ==========================================
 try:
-    # Ajusta el nombre de tu archivo Excel y la hoja si es necesario
     df = pd.read_excel("data/Bateria-Yacimiento-activo.xlsx")
     df = df.dropna()
-    
     data_dict = build_activo_dict(df)
 except Exception as e:
     print("Error cargando el archivo Excel:", e)
-    # Si falla, usas un diccionario vacío o predeterminado para evitar que la app crashee
     data_dict = {}
 
 # Convertir a JSON para enviarlo al template
@@ -96,18 +93,28 @@ def home():
         pred_hs = model_hs.predict(df_input_scaled)[0]
         pred_costo = model_costo.predict(df_input_scaled)[0]
         
-        # Renderizar la respuesta
+        # Renderizar la respuesta:
+        #  - prediction_hs y prediction_costo para mostrar resultados
+        #  - input_data para Jinja (campos fijos)
+        #  - input_data_json (convertido a JSON) para JS (campos dinámicos)
         return render_template(
             'index.html',
             prediction_hs=pred_hs,
             prediction_costo=pred_costo,
-            input_data=input_data,
+            input_data=input_data,                # Para los selects fijos (Jinja)
+            input_data_json=json.dumps(input_data), # Para re-seleccionar en JS
             label_encoders=label_encoders,
             data_json=data_json
         )
     
-    # GET: pasar data_json y label_encoders
-    return render_template('index.html', label_encoders=label_encoders, data_json=data_json)
+    # GET: primera carga, sin selección previa
+    return render_template(
+        'index.html',
+        label_encoders=label_encoders,
+        data_json=data_json,
+        input_data={},             # Campos fijos vacíos
+        input_data_json="{}"       # Campos dinámicos vacíos
+    )
 
 # ==========================================
 # 5. EJECUCIÓN LOCAL (OPCIONAL)
